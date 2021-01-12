@@ -12,8 +12,6 @@ headers = {
     "Referer": "https://www.cartoonmad.com/comic/"
 }
 
-qwe = 0
-
 
 def chooseComic():
     global comicTitle
@@ -119,7 +117,7 @@ def download(url: str, title: str, part: str, page: str):
     finally:
         if not os.path.exists("./logs/"):
             os.mkdir("./logs")
-        write("./logs/" + comicID +".json", json.dumps(errorList))
+        write("./logs/" + comicID + ".json", json.dumps(errorList))
 
 
 def createADownloadThread(data: dict):
@@ -128,7 +126,9 @@ def createADownloadThread(data: dict):
             download(data[part][page], comicTitle, part, page)
 
 
-def downloadStart(threadNum: int):
+def downloadStart():
+    print("请输入要使用的线程数量: ", end='')
+    threadNum = int(input())
     buildDownloadList()
     chunks = []
     i = 0
@@ -175,7 +175,7 @@ def read(path: str) -> str:
 def main():
     chooseComic()
     choosePart()
-    downloadStart(128)
+    downloadStart()
     print("Finished :)")
 
 
