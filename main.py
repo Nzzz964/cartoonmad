@@ -117,8 +117,6 @@ def download(url: str, title: str, part: str, page: str):
     except Exception:
         pass
     finally:
-        if not os.path.exists("./logs/"):
-            os.mkdir("./logs")
         write("./logs/" + comicID + ".json", json.dumps(errorList))
 
 
@@ -139,6 +137,8 @@ def downloadStart(useErrorList: bool = False):
     else:
         useErrorList = False
 
+    if not os.path.exists("./logs/"):
+            os.mkdir("./logs")
     buildDownloadList(useErrorList)
     chunks = []
     i = 0
