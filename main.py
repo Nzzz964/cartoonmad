@@ -56,7 +56,7 @@ def choosePart():
                 targets.append(i)
         elif re.match(r"^\d+$", want):
             want = int(want)
-            if want >= len(comicMetadata):
+            if want > len(comicMetadata):
                 raise Exception("无效的章节数: " + str(want))
             targets.append(int(want))
         else:
@@ -82,23 +82,25 @@ def buildDownloadUrl(id: str, part: str, page: str) -> str:
     return downloadUrl.replace("{id}", id).replace("{part}", part).replace("{page}", page)
 
 
-def buildDownloadList():
+def buildDownloadList(useErrorList: bool = False):
     global downloadList
     global errorList
-    downloadList = {}
-
-    for target in targets:
-        target = buildNum(str(target))
-        partTotalPage = getPage(target) + 1
-        downloadList[target] = {}
-        for i in range(1, partTotalPage):
-            downloadList[target][buildNum(str(i))] = buildDownloadUrl(
-                comicID,
-                target,
-                buildNum(str(i))
-            )
-
-    errorList = downloadList
+    if useErrorList:
+        errorList = json.loads(read("./logs/" + comicID + ".json"))
+        downloadList = errorList
+    else:
+        downloadList = {}
+        for target in targets:
+            target = buildNum(str(target))
+            partTotalPage = getPage(target) + 1
+            downloadList[target] = {}
+            for i in range(1, partTotalPage):
+                downloadList[target][buildNum(str(i))] = buildDownloadUrl(
+                    comicID,
+                    target,
+                    buildNum(str(i))
+                )
+        errorList = downloadList
 
 
 def download(url: str, title: str, part: str, page: str):
@@ -126,10 +128,18 @@ def createADownloadThread(data: dict):
             download(data[part][page], comicTitle, part, page)
 
 
-def downloadStart():
+def downloadStart(useErrorList: bool = False):
     print("请输入要使用的线程数量: ", end='')
     threadNum = int(input())
-    buildDownloadList()
+    print(r"是否下载上次下载错误的内容(y\n): ", end='')
+    useErrorList = input()
+
+    if useErrorList == "y":
+        useErrorList = True
+    else:
+        useErrorList = False
+
+    buildDownloadList(useErrorList)
     chunks = []
     i = 0
     while i < threadNum:
